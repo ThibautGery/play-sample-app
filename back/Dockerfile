@@ -21,20 +21,26 @@ RUN         cd /tmp && \
             mv /usr/local/activator-dist-$ACTIVATOR_VERSION /usr/local/activator && \
             rm typesafe-activator-$ACTIVATOR_VERSION.zip
 
+
+WORKDIR     /root
+# GET DEPENDENCIES
+ADD         build.sbt /root/
+ADD         project/plugins.sbt /root/project/
+ADD         project/build.properties /root/project/
+RUN         /usr/local/activator/activator compile
+
+
 # COMMIT PROJECT FILES
 ADD         app /root/app
 ADD         test /root/test
 ADD         conf /root/conf
 ADD         public /root/public
-ADD         build.sbt /root/
-ADD         project/plugins.sbt /root/project/
-ADD         project/build.properties /root/project/
+
 
 # BUILD THE PROJECT
-RUN         cd /root; /usr/local/activator/activator stage
+RUN         /usr/local/activator/activator stage
 
 
 # CONFIGURE IMAGE
-WORKDIR     /root
 ENTRYPOINT  ["target/universal/stage/bin/play-scala"]
 EXPOSE      9000
