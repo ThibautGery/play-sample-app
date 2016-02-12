@@ -11,5 +11,8 @@ POST        /api/users/sample            @controllers.Users.create
 GET         /api/users/:lastName         @controllers.Users.findByName(lastName: String)
 
 
-# Quotien
+# Quotient
 GET         /api/quotient-familial      @controllers.QuotientFamiliale.get
+
+# System
+GET         /api/ping                   @controllers.System.ping
