@@ -1,31 +1,38 @@
-app:
-  build: back
-  ports:
-    - 9000:9000
-  links:
-    - db:mongo
-  environment:
-    - MONGO_CONNECTION_STRING=mongodb://mongo:27017/sample
+version: '2'
+services:
+  app:
+    build: back
+    container_name: app
+    ports:
+      - 9000:9000
+    environment:
+      - MONGO_CONNECTION_STRING=mongodb://mongo:27017/sample
+    networks:
+      - myNetwork
 
+  db:
+    image: mongo:3.1.8
+    container_name: mongo
+    volumes:
+      - ./data:/data/db
+    ports:
+      - 28017:27017
+    networks:
+      - myNetwork
 
-db:
-  image: mongo:3.1.8
-  volumes:
-    - data:/data/db
-  ports:
-    - 28017:27017
+  front:
+    build: front
 
-front:
-  build: front
+  nginx:
+    build: nginx
+    volumes_from:
+      - front
+    ports:
+      - 8081:80
+      - 4431:443
+    networks:
+      - myNetwork
 
-
-nginx:
-  build: nginx
-  volumes_from:
-    - front
-  ports:
-    - 8081:80
-    - 4431:443
-  links:
-    - app:app
-    - front
+networks:
+  myNetwork:
+    driver: bridge
