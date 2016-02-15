@@ -1,38 +1,51 @@
 version: '2'
-services:
-  app:
-    build: back
-    container_name: app
-    ports:
-      - 9000:9000
-    environment:
-      - MONGO_CONNECTION_STRING=mongodb://mongo:27017/sample
-    networks:
-      - myNetwork
 
+networks:
+  # create the network with the bridge driver
+  # (see overlay for multi-host driver)
+  myNetwork:
+    driver: bridge
+
+services:
   db:
     image: mongo:3.1.8
     container_name: mongo
+    # share the volume ./data (host) with /data/db (container)
+    # enable us to keep the database's data when we restart the db container
     volumes:
       - ./data:/data/db
-    ports:
-      - 28017:27017
+    # join the network
     networks:
       - myNetwork
+
+  app:
+    build: back
+    container_name: app
+    # join the network
+    networks:
+      - myNetwork
+    # the db container can to reach with the hostname mongo (the container_name)
+    # inject the mongo connection string with environment variable
+    environment:
+      - MONGO_CONNECTION_STRING=mongodb://mongo:27017/sample
+    # wait for mongo to have started so we can connect
+    depends_on:
+      - db
 
   front:
     build: front
 
   nginx:
     build: nginx
+    # add the volume exposed in front (static HTML)
     volumes_from:
       - front
-    ports:
-      - 8081:80
-      - 4431:443
+    # join the network
     networks:
       - myNetwork
-
-networks:
-  myNetwork:
-    driver: bridge
+    # wait for the application to have started so we reverse proxy to it
+    depends_on:
+      - app
+    # expose the http port on the host
+    ports:
+      - 8081:80
