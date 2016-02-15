@@ -12,6 +12,7 @@ RUN npm install
 
 ## Copy the source
 COPY webpack.* /root/front/
+COPY karma.conf.js /root/front/karma.conf.js
 COPY src /root/front/src
 
 #Create app

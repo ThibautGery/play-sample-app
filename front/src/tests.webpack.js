@@ -4,5 +4,7 @@
 import 'angular';
 import 'angular-mocks/angular-mocks';
 
+import './bind.polyfill';
+
 var testsContext = require.context(".", true, /.test$/);
 testsContext.keys().forEach(testsContext);
