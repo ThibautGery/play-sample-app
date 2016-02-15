@@ -1,13 +1,36 @@
-app:
-  build: back
-  links:
-    - db:mongo
-  environment:
-    - MONGO_CONNECTION_STRING=mongodb://mongo:27017/sample
-  entrypoint:
-    - /usr/local/activator/activator
-    - test
+version: '2'
+
+networks:
+  # create the network with the bridge driver
+  # (see overlay for multi-host driver)
+  testNetwork:
+    driver: bridge
+
+services:
+  app:
+    build: back
+    networks:
+      - testNetwork
+    depends_on:
+      - db
+    environment:
+      MONGO_CONNECTION_STRING: mongodb://mongotest:27017/sample
+
+    entrypoint:
+      - /usr/local/activator/activator
+      - test
 
 
-db:
-  image: mongo:3.1.8
+  db:
+    image: mongo:3.1.8
+    networks:
+      - testNetwork
+    container_name: mongotest
+
+  front:
+    build: front
+    entrypoint:
+      - npm
+      - test
+    volumes:
+     - ./front/node_modules_test:/root/front/node_modules
